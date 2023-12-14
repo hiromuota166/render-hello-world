@@ -22,4 +22,4 @@ def hello_world():
 
     # POSTリクエストを送信
     response = requests.post(url, data=payload)
-    return response
+    return response.text
