@@ -1,12 +1,25 @@
 from flask import Flask
 import requests
-from bs4 import BeautifulSoup
 
 app = Flask(__name__)
 
 @app.route('/')
 def hello_world():
-    url = 'https://www.yomiuri.co.jp'
-    res = requests.get(url)
-    soup = BeautifulSoup(res.text, 'html.parser')
-    return soup.title.string
+    # リクエストのURL
+    url = "https://www.reserve1.jp/yoyaku/member/member_job_select.php"
+
+    # リクエストに必要なペイロードを設定
+    payload = {
+        "office": "4000393",
+        "grand": "2",
+        "mngfg": "2",
+        "rdate": "",  # 必要に応じて値を設定
+        "wk_month": "",  # 必要に応じて値を設定
+        "member": "",  # 必要に応じて値を設定
+        "SID": "",  # 必要に応じて値を設定
+        "proc_flg": "SMRRX"
+    }
+
+    # POSTリクエストを送信
+    response = requests.post(url, data=payload)
+    return response.text
