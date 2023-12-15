@@ -31,5 +31,16 @@ def hello_world():
     # 特定のテーブルを取得
     table = soup.find('table', {'class': 'table_base'})
 
+    if table:
+        # 各々の画像を特定し、置換する
+        for img in table.find_all('img'):
+            if img['src'] == 'p_img/msg_icon01.gif':
+                img.replace_with('❌')
+            elif img['src'] == 'p_img/msg_icon05.gif':
+                img.replace_with('⭕️')
+
     # テーブルのHTMLを文字列として返す
-    return str(table) if table else 'Table not found'
+    return print(str(table))
+
+if __name__ == '__main__':
+    hello_world()
