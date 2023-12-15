@@ -1,6 +1,7 @@
 from flask import Flask
 import requests
 from flask_cors import CORS
+from bs4 import BeautifulSoup
 
 app = Flask(__name__)
 CORS(app)
@@ -24,4 +25,11 @@ def hello_world():
 
     # POSTリクエストを送信
     response = requests.post(url, data=payload)
-    return response.text
+    # BeautifulSoupを使用してHTMLを解析
+    soup = BeautifulSoup(response.text, 'html.parser')
+
+    # 特定のテーブルを取得
+    table = soup.find('table', {'class': 'table_base'})
+
+    # テーブルのHTMLを文字列として返す
+    return str(table) if table else 'Table not found'
