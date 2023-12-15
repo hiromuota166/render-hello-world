@@ -40,7 +40,4 @@ def hello_world():
                 img.replace_with('⭕️')
 
     # テーブルのHTMLを文字列として返す
-    return print(str(table))
-
-if __name__ == '__main__':
-    hello_world()
+    return str(table) if table else 'Table not found'
