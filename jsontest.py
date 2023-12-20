@@ -26,34 +26,22 @@ def jsontest():
     # POSTリクエストを送信
     response = requests.post(url, data=payload)
     # BeautifulSoupを使用してHTMLを解析
-    soup = BeautifulSoup(response.text, 'html.parser')
+    soup = BeautifulSoup(response.text, 'html.parser', from_encoding='utf-8')
 
+    
     data = []
 
     # 時刻を抽出する
-    # time_slots = soup.select('tr.item_base td:nth-of-type(2)')
-    # times = ['~'.join(td.stripped_strings) for td in time_slots]
-
-    print(soup)
-
-    # # 空き状況を抽出する
-    # for row in enumerate(soup.select('tr.tr_base')):
-    #     cells = row.find_all('td')[1:]  # 最初のtd（コート名）をスキップ
-    #     for i, cell in enumerate(cells):
-    #         if cell.find('img', src="p_img/msg_icon05.gif"):
-    #             status = "空"
-    #         elif cell.find('img', src="p_img/msg_icon01.gif"):
-    #             status = "満"
-    #         else:
-    #             status = "？"
-
-    #         data.append({
-    #             "time": times[i],
-    #             "court": cell.get_text(strip=True),
-    #             "status": status
-    #         })
+    for row in soup.select('tr.item_base'):
+      for cell in row.find_all('td'):
+        text = cell.get_text(strip=True)
+        # ユニコード文字の置換
+        text = text.replace('\uff1a', ':').replace('\u301c', '-')
+        data.append({
+          'time': text
+        })
 
     return jsonify(data)
-
+    
 if __name__ == '__main__':
-    jsontest()
+    app.run()
