@@ -28,21 +28,21 @@ def jsontest():
     # BeautifulSoupを使用してHTMLを解析
     soup = BeautifulSoup(response.text, 'html.parser', from_encoding='utf-8')
 
+    # 手書きで時間帯を定義
+    times = ["09:00-10:00", "10:00-11:00", "11:00-12:00", "12:00-13:00", "13:00-14:00", "14:00-15:00", "15:00-16:00", "16:00-17:00", "17:00-18:00", "18:00-19:00", "19:00-20:00", "20:00-21:00"]
+
     data = []
 
-    time_rows = soup.select('tr.item_base')
+    # ステータス行を抽出する
     status_rows = soup.select('tr.tr_base')
-    
-    # 同じインデックスの行から時刻とステータスを抽出
-    for time_row, status_row in zip(time_rows, status_rows):
-        time_cells = time_row.find_all('td')
-        status_cells = status_row.find_all('td')
 
-        for time_cell, status_cell in zip(time_cells, status_cells):
-            #時刻の処理
-            time_text = time_cell.get_text(strip=True).replace('\uff1a', ':').replace('\u301c', '-')
+    # 各時間帯に対して処理
+    for time_index, time in enumerate(times):
+        status_dict = {'time': time}
 
-            #ステータスの処理
+        # 各コートのステータスを取得
+        for status_index, status_row in enumerate(status_rows):
+            status_cell = status_row.find_all('td')[time_index + 1]  # 各時間帯に対応するtd
             img = status_cell.find('img')
             if img:
                 if 'msg_icon05.gif' in img['src']:
@@ -52,12 +52,11 @@ def jsontest():
                 else:
                     status = '?'
             else:
-                status = 'None'
+                status = 'Error'
+            status_dict[f'status{status_index + 1}'] = status
 
-            data.append({
-                'time': time_text,
-                'status': status
-            })
+        data.append(status_dict)
+
     return jsonify(data)
     
 if __name__ == '__main__':
