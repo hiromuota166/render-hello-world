@@ -28,19 +28,36 @@ def jsontest():
     # BeautifulSoupを使用してHTMLを解析
     soup = BeautifulSoup(response.text, 'html.parser', from_encoding='utf-8')
 
-    
     data = []
 
-    # 時刻を抽出する
-    for row in soup.select('tr.item_base'):
-      for cell in row.find_all('td'):
-        text = cell.get_text(strip=True)
-        # ユニコード文字の置換
-        text = text.replace('\uff1a', ':').replace('\u301c', '-')
-        data.append({
-          'time': text
-        })
+    time_rows = soup.select('tr.item_base')
+    status_rows = soup.select('tr.tr_base')
+    
+    # 同じインデックスの行から時刻とステータスを抽出
+    for time_row, status_row in zip(time_rows, status_rows):
+        time_cells = time_row.find_all('td')
+        status_cells = status_row.find_all('td')
 
+        for time_cell, status_cell in zip(time_cells, status_cells):
+            #時刻の処理
+            time_text = time_cell.get_text(strip=True).replace('\uff1a', ':').replace('\u301c', '-')
+
+            #ステータスの処理
+            img = status_cell.find('img')
+            if img:
+                if 'msg_icon05.gif' in img['src']:
+                    status = 'O'
+                elif 'msg_icon01.gif' in img['src']:
+                    status = 'X'
+                else:
+                    status = '?'
+            else:
+                status = 'None'
+
+            data.append({
+                'time': time_text,
+                'status': status
+            })
     return jsonify(data)
     
 if __name__ == '__main__':
