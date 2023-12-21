@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask , jsonify
 import requests
 from flask_cors import CORS
 from bs4 import BeautifulSoup
@@ -7,7 +7,7 @@ app = Flask(__name__)
 CORS(app)
 
 @app.route('/')
-def hello_world():
+def appjson():
     # リクエストのURL
     url = "https://www.reserve1.jp/yoyaku/member/member_job_select.php"
 
@@ -26,18 +26,38 @@ def hello_world():
     # POSTリクエストを送信
     response = requests.post(url, data=payload)
     # BeautifulSoupを使用してHTMLを解析
-    soup = BeautifulSoup(response.text, 'html.parser')
+    soup = BeautifulSoup(response.text, 'html.parser', from_encoding='utf-8')
 
-    # 特定のテーブルを取得
-    table = soup.find('table', {'class': 'table_base'})
+    # 手書きで時間帯を定義
+    times = ["09:00-10:00", "10:00-11:00", "11:00-12:00", "12:00-13:00", "13:00-14:00", "14:00-15:00", "15:00-16:00", "16:00-17:00", "17:00-18:00", "18:00-19:00", "19:00-20:00", "20:00-21:00"]
 
-    if table:
-        # 各々の画像を特定し、置換する
-        for img in table.find_all('img'):
-            if img['src'] == 'p_img/msg_icon01.gif':
-                img.replace_with('❌')
-            elif img['src'] == 'p_img/msg_icon05.gif':
-                img.replace_with('⭕️')
+    data = []
 
-    # テーブルのHTMLを文字列として返す
-    return str(table) if table else 'Table not found'
+    # ステータス行を抽出する
+    status_rows = soup.select('tr.tr_base')
+
+    # 各時間帯に対して処理
+    for time_index, time in enumerate(times):
+        status_dict = {'time': time}
+
+        # 各コートのステータスを取得
+        for status_index, status_row in enumerate(status_rows):
+            status_cell = status_row.find_all('td')[time_index + 1]  # 各時間帯に対応するtd
+            img = status_cell.find('img')
+            if img:
+                if 'msg_icon05.gif' in img['src']:
+                    status = 'O'
+                elif 'msg_icon01.gif' in img['src']:
+                    status = 'X'
+                else:
+                    status = '?'
+            else:
+                status = 'Error'
+            status_dict[f'status{status_index + 1}'] = status
+
+        data.append(status_dict)
+
+    return jsonify(data)
+    
+if __name__ == '__main__':
+    app.run()
