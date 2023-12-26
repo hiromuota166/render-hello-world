@@ -2,25 +2,39 @@ from flask import Flask , jsonify
 import requests
 from flask_cors import CORS
 from bs4 import BeautifulSoup
+from datetime import datetime
+from flask import request
 
 app = Flask(__name__)
 CORS(app)
 
 @app.route('/')
 def appjson():
-    # リクエストのURL
+
     url = "https://www.reserve1.jp/yoyaku/member/member_job_select.php"
 
-    # リクエストに必要なペイロードを設定
+    # 現在の日付を取得
+    now = datetime.now()
+    current_year = now.strftime("%Y")
+    current_month = now.strftime("%m")
+    current_day = now.strftime("%d")
+
+    # リクエストパラメータを取得（デフォルト値を現在の日付に設定）
+    year = request.args.get('year', default=current_year)
+    month = request.args.get('month', default=current_month)
+    day = request.args.get('day', default=current_day)
+
+    # ペイロード内の日付を動的に設定
+    date_key = f"c_b[{year}{month}]"
     payload = {
-        "office": "4000393",
-        "grand": "2",
-        "mngfg": "2",
-        "rdate": "",  # 必要に応じて値を設定
-        "wk_month": "",  # 必要に応じて値を設定
-        "member": "",  # 必要に応じて値を設定
-        "SID": "",  # 必要に応じて値を設定
-        "proc_flg": "SMRRX"
+        "office":"4000393",
+        "proc_flg":"SMRRX",
+        "m_button":"",
+        "member":"0",
+        "grand":"2",
+        "mngfg":"2",
+        date_key: day,  # 日付を動的に設定
+        "c_month": "1",
     }
 
     # POSTリクエストを送信
